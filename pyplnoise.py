@@ -78,11 +78,11 @@ class RedNoise:
             else:
                 _ = self.get_series(int(npts_req))
 
-    def get_sample(self) -> float:
+    def get_sample(self) -> np.float64:
         """Retrieve a single sample."""
         sample, self.zi = signal.lfilter(
-            self.a, self.b, self.whitenoise.get_sample(), zi=self.zi)
-        return sample * self.scaling
+            self.a, self.b, np.array([self.whitenoise.get_sample()]), zi=self.zi)
+        return sample[0] * self.scaling
 
     def get_series(self, npts: int) -> np.ndarray:
         """Retrieve an array of npts samples."""
@@ -158,13 +158,13 @@ class AlphaNoise:
             else:
                 _ = self.get_series(int(npts_req))
 
-    def get_sample(self) -> float:
+    def get_sample(self) -> np.float64:
         """Retrieve a single sample."""
-        sample = self.whitenoise.get_sample()
+        sample = np.array([self.whitenoise.get_sample()])
         for i in range(0, len(self.a)):
             sample, self.zi[i] = signal.lfilter(
                 self.a[i], self.b[i], sample, zi=self.zi[i])
-        return sample * self.scaling
+        return sample[0] * self.scaling
 
     def get_series(self, npts: int) -> np.ndarray:
         """Retrieve an array of npts samples."""
