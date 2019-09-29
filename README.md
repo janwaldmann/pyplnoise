@@ -2,11 +2,11 @@
 **Py**thon **p**ower **l**aw **noise** generates arbitrarily long streams of power law noise
 using NumPy and SciPy.
 
-The noise is generated using shaping filters and the methodology closely follows
+The noise is generated with shaping filters and the methodology closely follows
 [Stephane Plaszczynski, Fluct. Noise Lett. 7: R&ndash;R13, 2007](https://doi.org/10.1142/S0219477507003635).
 You can also find the article on [arXiv:astro-ph/0510081](https://arxiv.org/abs/astro-ph/0510081).
 
-**pyplnoise** consists of a single module providing classes for the following
+**pyplnoise** consists of a single module providing classes implementing the following
 noise sources:
 * 1/f<sup>&alpha;</sup> power law noise with upper and lower frequency limits (class `AlphaNoise`),
 * a fast red (Brownian) noise generator with a lower frequency limit (class `RedNoise`),
@@ -15,14 +15,17 @@ noise sources:
 ## Quick Example
 The interface is very simple: just instantiate one of the above classes and run
 `get_sample()` to retrieve a single sample or `get_series(npts)` to
-retrieve an array of `npts` points. Interface documentation is available in the code.
+retrieve an array of `npts` samples. Interface documentation is available in the code.
 
 ```
 import pyplnoise
 import numpy as np
 
 fs = 10. # sampling frequency in Hz
-noisegen = pyplnoise.AlphaNoise(fs, 1e-3, fs/2., alpha=1.0) # lower frequency limit 1e-3 Hz, upper limit 5 Hz, 1/f power spectrum
+
+# instantiate a noise source with lower frequency limit 1e-3 Hz,
+# upper frequency limit 5 Hz and 1/f power spectrum
+noisegen = pyplnoise.AlphaNoise(fs, 1e-3, fs/2., alpha=1.0)
 
 one_sample = noisegen.get_sample()
 many_samples = noisegen.get_series(10000000)
