@@ -28,7 +28,7 @@ fs = 10. # sampling frequency in Hz
 noisegen = pyplnoise.AlphaNoise(fs, 1e-3, fs/2., alpha=1.0)
 
 one_sample = noisegen.get_sample()
-many_samples = noisegen.get_series(10000000)
+many_samples = noisegen.get_series(1000000)
 ```
 
 ## Detailed Examples
