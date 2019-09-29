@@ -2,7 +2,7 @@
 **Py**thon **p**ower **l**aw **noise** generates arbitrarily long streams of power law noise
 using NumPy and SciPy.
 
-The noise is generated using shaping filters and the methodology closely follows
+The noise is generated with shaping filters and the methodology closely follows
 [Stephane Plaszczynski, Fluct. Noise Lett. 7: R&ndash;R13, 2007](https://doi.org/10.1142/S0219477507003635).
 You can also find the article on [arXiv:astro-ph/0510081](https://arxiv.org/abs/astro-ph/0510081).
 
@@ -15,7 +15,7 @@ noise sources:
 ## Quick Example
 The interface is very simple: just instantiate one of the above classes and run
 `get_sample()` to retrieve a single sample or `get_series(npts)` to
-retrieve an array of `npts` points. Interface documentation is available in the code.
+retrieve an array of `npts` samples. Interface documentation is available in the code.
 
 ```
 import pyplnoise
