@@ -17,7 +17,7 @@ The interface is very simple: just instantiate one of the above classes and run
 `get_sample()` to retrieve a single sample or `get_series(npts)` to
 retrieve an array of `npts` samples. Interface documentation is available in the code.
 
-```
+```python
 import pyplnoise
 import numpy as np
 
@@ -44,7 +44,7 @@ Jupyter notebooks are provided in the [/examples](/examples) directory:
 
 ### Installing directly from GitHub
 Download the release tarball and run
-```
+```python
 python setup.py install
 ```
 
