@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 """Noise generators for long streams of 1/f^alpha noise.
 
-The time domain methods used follow Stephane Plaszczynski, Fluct. Noise
+The time domain methods used here follow Stephane Plaszczynski, Fluct. Noise
 Lett. 7: R-R13, 2007. DOI: 10.1142/S0219477507003635, see also
-https://arxiv.org/abs/astro-ph/0510081. The code also sticks to the
-coefficient notation in this article (which is different to the SciPy docs).
+https://arxiv.org/abs/astro-ph/0510081. The code sticks to the notation in this
+article (which is different to the SciPy docs).
+
+Examples and documentation are available on GitHub:
+https://github.com/janwaldmann/pyplnoise
+
 """
 
 import numpy as np
@@ -14,18 +18,20 @@ from scipy import signal
 class WhiteNoise:
     """White noise generator (constant power spectrum)."""
 
-    def __init__(self, f_sample: float, psd: float = 1.0):
+    def __init__(self, f_sample: float, psd: float = 1.0, seed: int = None):
         """Create a WhiteNoise instance.
 
         Args:
-            f_sample (float): sampling frequency in Hz
+            f_sample (float): sampling frequency in Hz.
             psd (float): constant value of the two-sided power spectral density.
                 The RMS value of the generated noise is sqrt(f_sample x psd).
+            seed (int, optional): seed for the random number generator. If none is
+                provided, entropy from the system will be used.
 
         """
         self.fs = f_sample
         self.rms = np.sqrt(f_sample * psd)
-        self.rng = np.random.default_rng()
+        self.rng = np.random.default_rng(seed)
 
     def get_sample(self) -> float:
         """Retrieve a single sample."""
@@ -43,25 +49,28 @@ class WhiteNoise:
 class RedNoise:
     """Red (Brownian) noise generator (1/f^2 power spectrum).
 
-    The two-sided noise PSD is scaled such that PSD(f = 1 Hz) = 1. Below f_min,
-    the noise is white.
+    The two-sided power spectral density (PSD) is scaled such that PSD(f = 1 Hz) = 1.
+    Below f_min, the noise is white.
     """
 
-    def __init__(self, f_sample: float, f_min: float, init_filter: bool = True):
+    def __init__(self, f_sample: float, f_min: float, init_filter: bool = True,
+                 seed: int = None):
         """Create a RedNoise instance.
 
         Args:
-            f_sample (float): sampling frequency in Hz
+            f_sample (float): sampling frequency in Hz.
             f_min (float): frequency cutoff in Hz. Below f_min, the noise will be
                 white.
             init_filter (bool, optional): settle filter during object initialization.
                 This might take some time depending on the magnitude of the ratio
                 f_sample/f_min. Default and highly recommended: True.
+            seed (int, optional): seed for the random number generator. If none is
+                provided, entropy from the system will be used.
 
         """
         self.fs = f_sample
         self.fmin = f_min
-        self.whitenoise = WhiteNoise(self.fs, psd=1.0)
+        self.whitenoise = WhiteNoise(self.fs, psd=1.0, seed=seed)
         self.scaling = 1. / (self.fs * self.fmin)
         self.a = np.array([2. * np.pi * self.fmin])
         self.b = np.array(
@@ -98,17 +107,17 @@ class RedNoise:
 class AlphaNoise:
     """Colored noise noise generator (arbitrary 1/f^alpha power spectrum).
 
-    The two-sided noise PSD is scaled such that PSD(f = 1 Hz) = 1. The noise
-    generator has user-specified lower and upper cutoff frequencies. Below and above
-    these frequencies, the generated noise is white.
+    The two-sided power spectral density (PSD) is scaled such that PSD(f = 1 Hz) = 1.
+    The noise generator has user-specified lower and upper cutoff frequencies. Below
+    and above these frequencies, the generated noise is white.
     """
 
     def __init__(self, f_sample: float, f_min: float, f_max: float,
-                 alpha: float, init_filter: bool = True):
+                 alpha: float, init_filter: bool = True, seed: int = None):
         """Create an AlphaNoise instance.
 
         Args:
-            f_sample (float): sampling frequency in Hz
+            f_sample (float): sampling frequency in Hz.
             f_min (float): lower frequency cutoff in Hz. Below f_min, the noise
                 will be white.
             f_max (float): upper frequency cutoff in Hz. Above f_max, the noise
@@ -118,6 +127,8 @@ class AlphaNoise:
             init_filter (bool, optional): settle filter during object initialization.
                 This might take some time depending on the magnitude of the ratio
                 f_sample/f_min. Default and highly recommended: True.
+            seed (int, optional): seed for the random number generator. If none is
+                provided, entropy from the system will be used.
 
         """
         if alpha > 2. or alpha < 0.01:
@@ -127,7 +138,7 @@ class AlphaNoise:
         self.fmin = f_min
         self.fmax = f_max
         self.alpha = alpha
-        self.whitenoise = WhiteNoise(self.fs, psd=1.0)
+        self.whitenoise = WhiteNoise(self.fs, psd=1.0, seed=seed)
         log_w_min = np.log10(2. * np.pi * self.fmin)
         log_w_max = np.log10(2. * np.pi * self.fmax)
         self.num_spectra = np.ceil(4.5 * (log_w_max - log_w_min)).astype(int)
@@ -189,6 +200,7 @@ class PinkNoise(AlphaNoise):
     """Pink noise generator (1/f power spectrum)."""
 
     def __init__(self, f_sample: float, f_min: float, f_max: float,
-                 init_filter: bool = True):
+                 init_filter: bool = True, seed: int = None):
         """Create a PinkNoise instance."""
-        AlphaNoise.__init__(self, f_sample, f_min, f_max, 1.0, init_filter)
+        AlphaNoise.__init__(self, f_sample, f_min, f_max, 1.0, init_filter,
+                            seed=seed)
