@@ -7,7 +7,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="pyplnoise",
-    version="1.0",
+    version="1.1",
     description="Arbitrarily long streams of power law noise using NumPy and SciPy.",
     long_description=LONG_DESC,
     long_description_content_type="text/markdown",
