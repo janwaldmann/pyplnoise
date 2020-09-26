@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
+import pyplnoise
 
 with open("README.md", "r") as f:
     LONG_DESC = f.read()
 
 setuptools.setup(
     name="pyplnoise",
-    version="1.1",
+    version=pyplnoise.__version__,
     description="Arbitrarily long streams of power law noise using NumPy and SciPy.",
     long_description=LONG_DESC,
     long_description_content_type="text/markdown",
