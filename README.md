@@ -30,7 +30,7 @@ fs = 10. # sampling frequency in Hz
 noisegen = pyplnoise.AlphaNoise(fs, 1e-3, fs/2., alpha=1.5, seed=42)
 
 one_sample = noisegen.get_sample()
-many_samples = noisegen.get_series(1000000)
+many_samples = noisegen.get_series(100000)
 ```
 
 ## Detailed examples
@@ -43,6 +43,11 @@ Jupyter notebooks are provided in the [/examples](/examples) directory:
 ### Dependencies
 * NumPy &ge; 1.17 (see NEP 19)
 * SciPy &ge; 1.3
+
+### Installing from pypi
+```python
+pip install pyplnoise
+```
 
 ### Installing directly from GitHub
 Download the release tarball and run
