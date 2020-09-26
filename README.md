@@ -34,17 +34,17 @@ many_samples = noisegen.get_series(100000)
 ```
 
 ## Detailed examples
-Jupyter notebooks are provided in the [/examples](/examples) directory:
-1. [Overview of the noise sources and their properties](/examples/overview_of_noise_sources.ipynb)
+Jupyter notebooks are provided in the [/examples](https://github.com/janwaldmann/pyplnoise/tree/master/examples) directory:
+1. [Overview of the noise sources and their properties](https://github.com/janwaldmann/pyplnoise/tree/master/examples/overview_of_noise_sources.ipynb)
 2. [Application example: modeling the random signal errors of a gyroscope (Allan variance
-   of synthetic noise)](/examples/application_example_allan_variance.ipynb)
+   of synthetic noise)](https://github.com/janwaldmann/pyplnoise/tree/master/examples/application_example_allan_variance.ipynb)
 
 ## Installation
 ### Dependencies
 * NumPy &ge; 1.17 (see NEP 19)
 * SciPy &ge; 1.3
 
-### Installing from pypi
+### Installing from [PyPI](https://pypi.org/project/pyplnoise/)
 ```python
 pip install pyplnoise
 ```
