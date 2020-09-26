@@ -14,11 +14,13 @@ https://github.com/janwaldmann/pyplnoise
 import numpy as np
 from scipy import signal
 
+__version__ = "1.2"
+
 
 class WhiteNoise:
     """White noise generator (constant power spectrum)."""
 
-    def __init__(self, f_sample: float, psd: float = 1.0, seed: int = None):
+    def __init__(self, f_sample: float, psd: float = 1.0, seed: int = None) -> None:
         """Create a WhiteNoise instance.
 
         Args:
@@ -29,21 +31,21 @@ class WhiteNoise:
                 provided, entropy from the system will be used.
 
         """
-        self.fs = f_sample
-        self.rms = np.sqrt(f_sample * psd)
-        self.rng = np.random.default_rng(seed)
+        self._fs = f_sample
+        self._rms = np.sqrt(f_sample * psd)
+        self._rng = np.random.default_rng(seed)
 
     def get_sample(self) -> float:
         """Retrieve a single sample."""
-        return self.rng.normal(loc=0.0, scale=self.rms)
+        return self._rng.normal(loc=0.0, scale=self._rms)
 
     def get_series(self, npts: int) -> np.ndarray:
         """Retrieve an array of npts samples."""
         if npts > np.iinfo(int).max:
             raise ValueError("""Argument 'npts' must be an integer <= {}. If you
-            want to obtain more samples, run get_series() several times 
+            want to obtain more samples, run get_series() several times
             and concatenate the results.""".format(np.iinfo(int).max))
-        return self.rng.normal(loc=0.0, scale=self.rms, size=npts)
+        return self._rng.normal(loc=0.0, scale=self._rms, size=npts)
 
 
 class RedNoise:
@@ -54,7 +56,7 @@ class RedNoise:
     """
 
     def __init__(self, f_sample: float, f_min: float, init_filter: bool = True,
-                 seed: int = None):
+                 seed: int = None) -> None:
         """Create a RedNoise instance.
 
         Args:
@@ -68,17 +70,17 @@ class RedNoise:
                 provided, entropy from the system will be used.
 
         """
-        self.fs = f_sample
-        self.fmin = f_min
-        self.whitenoise = WhiteNoise(self.fs, psd=1.0, seed=seed)
-        self.scaling = 1. / (self.fs * self.fmin)
-        self.a = np.array([2. * np.pi * self.fmin])
-        self.b = np.array(
-            [1.0, -1.0 * np.exp(-2. * np.pi * self.fmin / self.fs)])
-        self.zi = signal.lfilter_zi(
-            self.a, self.b) * self.whitenoise.get_sample()
+        self._fs = f_sample
+        self._fmin = f_min
+        self._whitenoise = WhiteNoise(self._fs, psd=1.0, seed=seed)
+        self._scaling = 1. / (self._fs * self._fmin)
+        self._a = np.array([2. * np.pi * self._fmin])
+        self._b = np.array(
+            [1.0, -1.0 * np.exp(-2. * np.pi * self._fmin / self._fs)])
+        self._zi = signal.lfilter_zi(
+            self._a, self._b) * self._whitenoise.get_sample()
         if init_filter:
-            npts_req = np.ceil(2. * self.fs / self.fmin)
+            npts_req = np.ceil(2. * self._fs / self._fmin)
             # safeguard for machines with small memory
             npts_per_run_max = np.iinfo(int).max // 16
             if npts_req > npts_per_run_max:
@@ -89,19 +91,19 @@ class RedNoise:
 
     def get_sample(self) -> np.float64:
         """Retrieve a single sample."""
-        sample, self.zi = signal.lfilter(
-            self.a, self.b, np.array([self.whitenoise.get_sample()]), zi=self.zi)
-        return sample[0] * self.scaling
+        sample, self._zi = signal.lfilter(
+            self._a, self._b, np.array([self._whitenoise.get_sample()]), zi=self._zi)
+        return sample[0] * self._scaling
 
     def get_series(self, npts: int) -> np.ndarray:
         """Retrieve an array of npts samples."""
         if npts > np.iinfo(int).max:
             raise ValueError("""Argument 'npts' must be an integer <= {}. If you
-            want to obtain more samples, run get_series() several times 
+            want to obtain more samples, run get_series() several times
             and concatenate the results.""".format(np.iinfo(int).max))
-        samples, self.zi = signal.lfilter(
-            self.a, self.b, self.whitenoise.get_series(npts), zi=self.zi)
-        return samples * self.scaling
+        samples, self._zi = signal.lfilter(
+            self._a, self._b, self._whitenoise.get_series(npts), zi=self._zi)
+        return samples * self._scaling
 
 
 class AlphaNoise:
@@ -113,7 +115,7 @@ class AlphaNoise:
     """
 
     def __init__(self, f_sample: float, f_min: float, f_max: float,
-                 alpha: float, init_filter: bool = True, seed: int = None):
+                 alpha: float, init_filter: bool = True, seed: int = None) -> None:
         """Create an AlphaNoise instance.
 
         Args:
@@ -134,33 +136,33 @@ class AlphaNoise:
         if alpha > 2. or alpha < 0.01:
             raise ValueError(
                 "The exponent must be in the range 0.01 <= alpha <= 2.")
-        self.fs = f_sample
-        self.fmin = f_min
-        self.fmax = f_max
-        self.alpha = alpha
-        self.whitenoise = WhiteNoise(self.fs, psd=1.0, seed=seed)
-        log_w_min = np.log10(2. * np.pi * self.fmin)
-        log_w_max = np.log10(2. * np.pi * self.fmax)
-        self.num_spectra = np.ceil(4.5 * (log_w_max - log_w_min)).astype(int)
-        dp = (log_w_max - log_w_min) / self.num_spectra
-        self.a = [None] * self.num_spectra
-        self.b = [None] * self.num_spectra
-        self.zi = [None] * self.num_spectra
-        for i in range(0, self.num_spectra):
-            log_p_i = log_w_min + dp * 0.5 * ((2. * i + 1.) - self.alpha / 2.)
+        self._fs = f_sample
+        self._fmin = f_min
+        self._fmax = f_max
+        self._alpha = alpha
+        self._whitenoise = WhiteNoise(self._fs, psd=1.0, seed=seed)
+        log_w_min = np.log10(2. * np.pi * self._fmin)
+        log_w_max = np.log10(2. * np.pi * self._fmax)
+        self._num_spectra = np.ceil(4.5 * (log_w_max - log_w_min)).astype(int)
+        dp = (log_w_max - log_w_min) / self._num_spectra
+        self._a = [None] * self._num_spectra
+        self._b = [None] * self._num_spectra
+        self._zi = [None] * self._num_spectra
+        for i in range(0, self._num_spectra):
+            log_p_i = log_w_min + dp * 0.5 * ((2. * i + 1.) - self._alpha / 2.)
             filter_f_min = np.power(10., log_p_i) / (2. * np.pi)
             filter_f_max = np.power(
-                10., log_p_i + (dp * self.alpha / 2.)) / (2. * np.pi)
+                10., log_p_i + (dp * self._alpha / 2.)) / (2. * np.pi)
             if i == 0:
-                self.fmin = filter_f_min
+                self._fmin = filter_f_min
             a0, a1, b1 = self._calc_filter_coeff(filter_f_min, filter_f_max)
-            self.a[i] = np.array([a0, a1])
-            self.b[i] = np.array([1.0, -1.0 * b1])
-            self.zi[i] = signal.lfilter_zi(self.a[i], self.b[i])
-        self.fmax = filter_f_max
-        self.scaling = 1. / np.power(self.fmax, alpha / 2.)
+            self._a[i] = np.array([a0, a1])
+            self._b[i] = np.array([1.0, -1.0 * b1])
+            self._zi[i] = signal.lfilter_zi(self._a[i], self._b[i])
+        self._fmax = filter_f_max
+        self._scaling = 1. / np.power(self._fmax, alpha / 2.)
         if init_filter:
-            npts_req = np.ceil(2. * self.fs / self.fmin)
+            npts_req = np.ceil(2. * self._fs / self._fmin)
             # safeguard for machines with small memory
             npts_per_run_max = np.iinfo(int).max // 16
             if npts_req > npts_per_run_max:
@@ -171,28 +173,28 @@ class AlphaNoise:
 
     def get_sample(self) -> np.float64:
         """Retrieve a single sample."""
-        sample = np.array([self.whitenoise.get_sample()])
-        for i in range(0, len(self.a)):
-            sample, self.zi[i] = signal.lfilter(
-                self.a[i], self.b[i], sample, zi=self.zi[i])
-        return sample[0] * self.scaling
+        sample = np.array([self._whitenoise.get_sample()])
+        for i in range(0, len(self._a)):
+            sample, self._zi[i] = signal.lfilter(
+                self._a[i], self._b[i], sample, zi=self._zi[i])
+        return sample[0] * self._scaling
 
     def get_series(self, npts: int) -> np.ndarray:
         """Retrieve an array of npts samples."""
         if npts > np.iinfo(int).max:
             raise ValueError("""Argument 'npts' must be an integer <= {}. If you
-            want to obtain more samples, run get_series() several times 
+            want to obtain more samples, run get_series() several times
             and concatenate the results.""".format(np.iinfo(int).max))
-        samples = self.whitenoise.get_series(npts)
-        for i in range(0, len(self.a)):
-            samples, self.zi[i] = signal.lfilter(
-                self.a[i], self.b[i], samples, zi=self.zi[i])
-        return samples * self.scaling
+        samples = self._whitenoise.get_series(npts)
+        for i in range(0, len(self._a)):
+            samples, self._zi[i] = signal.lfilter(
+                self._a[i], self._b[i], samples, zi=self._zi[i])
+        return samples * self._scaling
 
     def _calc_filter_coeff(self, f_min: float, f_max: float) -> tuple:
-        a0 = (self.fs + f_max * np.pi) / (self.fs + f_min * np.pi)
-        a1 = -1. * (self.fs - f_max * np.pi) / (self.fs + f_min * np.pi)
-        b1 = (self.fs - f_min * np.pi) / (self.fs + f_min * np.pi)
+        a0 = (self._fs + f_max * np.pi) / (self._fs + f_min * np.pi)
+        a1 = -1. * (self._fs - f_max * np.pi) / (self._fs + f_min * np.pi)
+        b1 = (self._fs - f_min * np.pi) / (self._fs + f_min * np.pi)
         return (a0, a1, b1)
 
 
@@ -200,7 +202,7 @@ class PinkNoise(AlphaNoise):
     """Pink noise generator (1/f power spectrum)."""
 
     def __init__(self, f_sample: float, f_min: float, f_max: float,
-                 init_filter: bool = True, seed: int = None):
+                 init_filter: bool = True, seed: int = None) -> None:
         """Create a PinkNoise instance."""
         AlphaNoise.__init__(self, f_sample, f_min, f_max, 1.0, init_filter,
                             seed=seed)
