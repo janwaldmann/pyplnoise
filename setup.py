@@ -13,6 +13,7 @@ setuptools.setup(
     long_description=LONG_DESC,
     long_description_content_type="text/markdown",
     author="Jan Waldmann",
+    author_email="dev@pgmail.org",
     py_modules=['pyplnoise'],
     license='BSD',
     url='https://github.com/janwaldmann/pyplnoise',
