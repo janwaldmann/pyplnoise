@@ -1,1 +1,1 @@
-recursive-include examples
+graft examples
