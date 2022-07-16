@@ -1,3 +1,6 @@
+# Warning
+This package is no longer maintained. Compatibility with recent versions of
+Python, NumPy or SciPy cannot be guaranteed.
 # pyplnoise
 **Py**thon **p**ower **l**aw **noise** generates arbitrarily long streams of power law noise
 using NumPy and SciPy.
